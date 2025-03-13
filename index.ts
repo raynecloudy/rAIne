@@ -32,16 +32,31 @@ app.get("/api", (req, res) => {
   res.json({"hello": "world"});
 });
 
-app.get("/api/predict/:word", (req, res) => {
-  db.all("SELECT * FROM words WHERE word = ?", [req.params.word], (err, words: {word:string,next:string}[]) => {
-    if (err) {
-      res.json({"error": err.message});
-    } else if (words.length === 0) {
-      res.json({"error": "no next word is recognized"});
-    } else {
-      res.json({"result": `${req.params.word} ${words[Math.floor(Math.random()*words.length)].next}`});
-    }
+app.get("/api/predict/:word/length/:len", async (req, res) => {
+  let l = Number.parseInt(req.params.len);
+  let w = req.params.word;
+  let s = req.params.word;
+  let add = (word: string) => new Promise((resolve) => {
+    db.all("SELECT * FROM words WHERE word = ?", [w], (err, words: {word:string,next:string}[]) => {
+      if (err) {
+        res.json({"error": err.message});
+        return;
+      } else if (words.length === 0) {
+        res.json({"result": s});
+        return;
+      } else {
+        w = words[Math.floor(Math.random()*words.length)].next;
+        s = `${s} ${w}`;
+        resolve(0);
+      }
+    });
   });
+  console.log("ready");
+  for (let i = 0; i < l; i++) {
+    await add(w);
+  }
+  console.log(s);
+  res.json({"result": s});
 });
 
 app.get("/api/add/:word/:word2", (req, res) => {
