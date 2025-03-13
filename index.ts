@@ -60,7 +60,7 @@ app.get("/api/predict/:word/length/:len", async (req, res) => {
 });
 
 app.get("/api/add/:word/:word2", (req, res) => {
-  db.run("INSERT INTO words (word, next) VALUES (?, ?)", [req.params.word, req.params.word2], (err) => {
+  db.run("INSERT INTO words (word, next) VALUES (?, ?)", [req.params.word.toLowerCase(), req.params.word2.toLowerCase()], (err) => {
     if (err) {
       res.json({"error": err.message});
     } else {
