@@ -35,7 +35,7 @@ app.get("/api", (req, res) => {
 app.get("/api/predict/:word", (req, res) => {
   db.all("SELECT * FROM words WHERE word = ?", [req.params.word], (err, words: {word:string,next:string}[]) => {
     if (err) {
-      res.json({"error": ":("});
+      res.json({"error": err.message});
     } else {
       res.json({"result": `${req.params.word} ${words[Math.floor(Math.random()*words.length)].next}`});
     }
