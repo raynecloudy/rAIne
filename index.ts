@@ -62,6 +62,23 @@ app.get("/api/add/:word/:word2", (req, res) => {
   });
 });
 
+app.get("/api/add/:sentence", async (req, res) => {
+  const words = req.params.sentence.toLowerCase().split(/[ ]+/);
+  let add = (i: number) => new Promise((resolve) => {
+    db.run("INSERT INTO words (word, next) VALUES (?, ?)", [words[i], words[i + 1]], (err) => {
+      resolve(0);
+      if (err) {
+        res.json({"error": err.message});
+        return;
+      }
+    });
+  });
+  for (let i = 0; i < words.length - 1; i++) {
+    await add(i);
+  }
+  res.json({"result": `success`});
+});
+
 let predict = async (pw: string, l: number) => {
   let s = pw;
   let w = pw;
