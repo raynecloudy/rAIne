@@ -79,6 +79,16 @@ app.get("/api/add/:sentence", async (req, res) => {
   res.json({"result": `success`});
 });
 
+app.get("/api/count_nodes", (req, res) => {
+  db.get("SELECT COUNT(*) FROM words", (err, count) => {
+    if (err) {
+      res.json({"error": err.message});
+      return;
+    }
+    res.json({"count": count["COUNT(*)"]});
+  });
+});
+
 let predict = async (pw: string, l: number) => {
   let s = pw;
   let w = pw;
