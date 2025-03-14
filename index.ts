@@ -13,6 +13,8 @@ const client = new Client({
   ]
 });
 
+client.login(process.env.TOKEN);
+
 const app = express();
 const port = parseInt(process.env.PORT) || process.argv[3] || 8080;
 
