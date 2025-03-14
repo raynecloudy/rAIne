@@ -90,8 +90,8 @@ app.get("/api/count_nodes", (req, res) => {
 });
 
 let predict = async (pw: string, l: number) => {
-  let s = pw;
-  let w = pw;
+  let s = pw.toLowerCase();
+  let w = pw.toLowerCase();
   let add = (word: string) => new Promise((resolve) => {
     db.all("SELECT * FROM words WHERE word = ?", [w], (err, words: {word:string,next:string}[]) => {
       if (err) {
