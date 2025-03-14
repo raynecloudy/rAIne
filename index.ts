@@ -8,15 +8,16 @@ dotenv.config();
 
 const client = new Client({
   intents: [
-      GatewayIntentBits.GuildMessages,
-      GatewayIntentBits.MessageContent
+    GatewayIntentBits.Guilds,
+    GatewayIntentBits.GuildMessages,
+    GatewayIntentBits.MessageContent,
   ]
 });
 
 client.login(process.env.TOKEN);
 
 const app = express();
-const port = parseInt(process.env.PORT) || process.argv[3] || 8080;
+const port = parseInt(process.env.PORT) || process.argv[3] || 8000;
 
 const db = new Database("./ai.db", (err) => {
   if (err) {
@@ -48,28 +49,7 @@ app.get("/api", (req, res) => {
 app.get("/api/predict/:word/length/:len", async (req, res) => {
   let l = Number.parseInt(req.params.len);
   let w = req.params.word;
-  let s = req.params.word;
-  let add = (word: string) => new Promise((resolve) => {
-    db.all("SELECT * FROM words WHERE word = ?", [w], (err, words: {word:string,next:string}[]) => {
-      if (err) {
-        res.json({"error": err.message});
-        return;
-      } else if (words.length === 0) {
-        res.json({"result": s});
-        return;
-      } else {
-        w = words[Math.floor(Math.random()*words.length)].next;
-        s = `${s} ${w}`;
-        resolve(0);
-      }
-    });
-  });
-  console.log("ready");
-  for (let i = 0; i < l; i++) {
-    await add(w);
-  }
-  console.log(s);
-  res.json({"result": s});
+  res.json(await predict(w, l));
 });
 
 app.get("/api/add/:word/:word2", (req, res) => {
@@ -82,6 +62,30 @@ app.get("/api/add/:word/:word2", (req, res) => {
   });
 });
 
+let predict = async (pw: string, l: number) => {
+  let s = pw;
+  let w = pw;
+  let add = (word: string) => new Promise((resolve) => {
+    db.all("SELECT * FROM words WHERE word = ?", [w], (err, words: {word:string,next:string}[]) => {
+      if (err) {
+        resolve(0);
+        return {"error": err.message};
+      } else if (words.length === 0) {
+        resolve(0);
+        return {"result": s};
+      } else {
+        w = words[Math.floor(Math.random()*words.length)].next;
+        s = `${s} ${w}`;
+        resolve(0);
+      }
+    });
+  });
+  for (let i = 0; i < l; i++) {
+    await add(w);
+  }
+  return {"result": s};
+}
+
 app.listen(port, () => {
   console.log(`listening on http://localhost:${port}`);
 });
@@ -89,3 +93,9 @@ app.listen(port, () => {
 client.on("ready", () => {
   console.log("discord bot ready");
 })
+
+client.on("messageCreate", async (message) => {
+  if (message.content.startsWith(`<@${client.user.id}>`) && message.content.includes(" ")) {
+    await message.reply((await predict(message.content.slice(message.content.lastIndexOf(" ") + 1), 100)).result);
+  }
+});
