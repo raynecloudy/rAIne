@@ -1,11 +1,22 @@
+import { Client, GatewayIntentBits } from "discord.js";
 import * as express from "express";
 import * as path from "path";
-const sqlite = require("sqlite3");
+import { Database } from "sqlite3";
+
+import dotenv = require("dotenv");
+dotenv.config();
+
+const client = new Client({
+  intents: [
+      GatewayIntentBits.GuildMessages,
+      GatewayIntentBits.MessageContent
+  ]
+});
 
 const app = express();
 const port = parseInt(process.env.PORT) || process.argv[3] || 8080;
 
-const db = new sqlite.Database("./ai.db", (err) => {
+const db = new Database("./ai.db", (err) => {
   if (err) {
     console.error(err.message);
   }
@@ -72,3 +83,7 @@ app.get("/api/add/:word/:word2", (req, res) => {
 app.listen(port, () => {
   console.log(`listening on http://localhost:${port}`);
 });
+
+client.on("ready", () => {
+  console.log("discord bot ready");
+})
