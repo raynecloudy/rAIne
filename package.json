@@ -1,7 +1,7 @@
 {
-  "name": "node-express-web-ts",
+  "name": "rAIne",
   "version": "1.0.0",
-  "description": "",
+  "description": "a discord bot featuring a handmade next-word-predictor model trained solely on content created by rayne cloudy",
   "main": "index.js",
   "scripts": {
     "dev": "nodemon --watch --ext 'ts,json' --exec 'npm run build && npm run start'",
@@ -9,8 +9,8 @@
     "start": "node dist/index.js"
   },
   "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "author": "raynecloudy",
+  "license": "MIT",
   "dependencies": {
     "discord.js": "^14.18.0",
     "dotenv": "^16.4.7",
