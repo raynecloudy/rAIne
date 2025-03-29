@@ -1,6 +1,7 @@
 import { Client, GatewayIntentBits } from "discord.js";
 import * as express from "express";
 import * as path from "path";
+import * as cors from "cors";
 import { Database } from "sqlite3";
 
 import dotenv = require("dotenv");
@@ -15,6 +16,11 @@ const client = new Client({
 });
 
 client.login(process.env.TOKEN);
+
+let cors_options = {
+  origin: "https://raynec.dev",
+  optionsSuccessStatus: 200 // some legacy browsers (IE11, various SmartTVs) choke on 204
+}
 
 const app = express();
 const port = parseInt(process.env.PORT) || process.argv[3] || 8000;
@@ -34,24 +40,26 @@ db.run(`CREATE TABLE IF NOT EXISTS words (
   }
 });
 
-app.use(express.static(path.join(__dirname, "public")))
-  .set("views", path.join(__dirname, "../views"))
-  .set("view engine", "ejs");
-
-app.get("/", (req, res) => {
-  res.render("index");
+app.get("/", cors(cors_options), (req, res) => {
+  res.json({"message": "hii!! enter a word in the URL to get a cool AI-generated result. example: https://ai.raynec.dev/hi"});
 });
 
-app.get("/api", (req, res) => {
-  res.json({"hello": "world"});
-});
-
-app.get("/api/predict/:word/length/:len", async (req, res) => {
-  let l = Number.parseInt(req.params.len);
+app.get("/:word", async (req, res) => {
+  let l = 100;
   let w = req.params.word;
   res.json(await predict(w, l));
 });
 
+// app.get(":word/length/:len", async (req, res) => {
+//   let l = Number.parseInt(req.params.len);
+//   if (l > 100) {
+//     l = 100;
+//   }
+//   let w = req.params.word;
+//   res.json(await predict(w, l));
+// });
+
+/*
 app.get("/api/add/:word/:word2", (req, res) => {
   db.run("INSERT INTO words (word, next) VALUES (?, ?)", [req.params.word.toLowerCase(), req.params.word2.toLowerCase()], (err) => {
     if (err) {
@@ -78,8 +86,9 @@ app.get("/api/add/:sentence", async (req, res) => {
   }
   res.json({"result": `success`});
 });
+*/
 
-app.get("/api/count_nodes", (req, res) => {
+app.get("/count_nodes", (req, res) => {
   db.get("SELECT COUNT(*) FROM words", (err, count) => {
     if (err) {
       res.json({"error": err.message});
